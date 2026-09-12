@@ -1,3 +1,5 @@
+// find whether a number is prime or not
+
 import java.util.Scanner;
 
 public class Prime
@@ -28,3 +30,13 @@ public class Prime
         sc.close();
     }
 }
+
+/* expected output:
+enter number: 17
+17 is a prime number 
+*/
+
+/* actual output:
+enter number: 15
+15 is not a prime number 
+*/

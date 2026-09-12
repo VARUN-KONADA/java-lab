@@ -10,3 +10,15 @@ public class Cmdargs
             
     }
 }
+
+/* expected output:
+name : varun
+age : 18
+college : anits
+*/
+
+/* actual output:
+name : Varun
+age : 18
+college : ANITS
+*/

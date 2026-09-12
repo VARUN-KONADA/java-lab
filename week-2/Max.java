@@ -31,3 +31,21 @@ public class Max
             
     }
 }
+
+/* expected output:
+Enter number of elements : 5
+Enter element : 10
+Enter element : 20
+Enter element : 30
+Enter element : 40
+Enter element : 50
+maximum element is: 50
+*/
+
+/* actual output:
+Enter number of elements : 3
+Enter element : 15
+Enter element : 35
+Enter element : 25
+maximum element is: 35
+*/

@@ -29,3 +29,12 @@ public class Vowel
             
     }
 }
+
+/* expected output:
+Enter a string : Hello world
+There are 3 vowels
+*/
+/* actual output:
+Enter a string : Hi bro
+There are 2 vowels
+*/
