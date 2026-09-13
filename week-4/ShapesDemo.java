@@ -1,4 +1,4 @@
-// demonstrates the use of overriding 
+// a) demonstrates the use of overriding 
 
 class Shape
 {
