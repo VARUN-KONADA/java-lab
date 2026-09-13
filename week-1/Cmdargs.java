@@ -1,4 +1,4 @@
-// displaying cmd args
+// a) displaying data using cmd args
 
 public class Cmdargs
 {

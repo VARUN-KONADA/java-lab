@@ -1,4 +1,4 @@
-// performs basic arithmetic operations on two numbers
+// b) performs basic arithmetic operations on two numbers
 import java.util.Scanner;
 import java.lang.Math;
 

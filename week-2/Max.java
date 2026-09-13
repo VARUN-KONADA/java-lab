@@ -1,4 +1,4 @@
-// finding largest number in array
+// a) finding largest number in array
 import java.util.Scanner;
 
 public class Max
@@ -28,7 +28,7 @@ public class Max
         }
         
         System.out.println("maximum element is: " +max);
-            
+        sc.close();
     }
 }
 

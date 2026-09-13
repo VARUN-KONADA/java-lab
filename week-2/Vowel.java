@@ -1,4 +1,4 @@
-// finding number of vowels in string
+// b) finding number of vowels in string
 import java.util.Scanner;
 
 public class Vowel
