@@ -9,6 +9,7 @@ public class AgeValidation
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter your age: ");
         int age = sc.nextInt();
+        sc.close();
         try 
         {
             if (age < 18) 
@@ -21,6 +22,6 @@ public class AgeValidation
         {
             System.out.println("Invalid age: " + e.getMessage());
         }
-        sc.close();
+        
     }
 }

@@ -1,72 +1,101 @@
-class Printer {
+/*Write a Java program to Create two threads: one for printing even numbers
+and the other for printing odd numbers. Ensure proper synchronization to
+avoid interleaving output and guarantee correct sequence of numbers. */
+
+class Printer 
+{
     private int number = 1;
     private final int LIMIT = 10;
 
-    // Called by Odd Thread
-    public synchronized void printOdd() {
-        while (number <= LIMIT) {
-            // If the number is EVEN, it's NOT Odd's turn -> WAIT!
-            while (number % 2 == 0) {
-                try {
-                    wait(); // Releases lock and sleeps on "this" printer object
-                } catch (InterruptedException e) {}
+    public synchronized void printOdd() 
+    {
+        while (number <= LIMIT) 
+        {
+            
+            while (number % 2 == 0) 
+            {
+                try 
+                {
+                    wait(); 
+                } 
+                catch (InterruptedException e) 
+                {
+                    e.printStackTrace();
+                }
             }
 
-            if (number <= LIMIT) {
+            if (number <= LIMIT) 
+            {
                 System.out.println("Odd Thread : " + number);
                 number++;
-                notify(); // Wakes up the Even thread sleeping on "this" printer object
+                notify(); 
             }
         }
     }
 
-    // Called by Even Thread
-    public synchronized void printEven() {
-        while (number <= LIMIT) {
-            // If the number is ODD, it's NOT Even's turn -> WAIT!
-            while (number % 2 != 0) {
-                try {
-                    wait(); // Releases lock and sleeps on "this" printer object
-                } catch (InterruptedException e) {}
+    public synchronized void printEven() 
+    {
+        while (number <= LIMIT) 
+        {
+            
+            while (number % 2 != 0) 
+            {
+                try 
+                {
+                    wait(); 
+                } 
+                catch (InterruptedException e) 
+                {
+                    e.printStackTrace();
+                }
             }
 
-            if (number <= LIMIT) {
+            if (number <= LIMIT) 
+            {
                 System.out.println("Even Thread: " + number);
                 number++;
-                notify(); // Wakes up the Odd thread sleeping on "this" printer object
+                notify();
             }
         }
     }
 }
 
-// CLASS 1: Odd Thread
-class OddThread extends Thread {
+// Odd Thread
+class OddThread extends Thread 
+{
     private Printer printer;
 
-    public OddThread(Printer printer) {
+    public OddThread(Printer printer) 
+    {
         this.printer = printer;
     }
 
-    public void run() {
+    public void run() 
+    {
         printer.printOdd();
     }
 }
 
-// CLASS 2: Even Thread
-class EvenThread extends Thread {
+// Even Thread
+class EvenThread extends Thread 
+{
     private Printer printer;
 
-    public EvenThread(Printer printer) {
+    public EvenThread(Printer printer) 
+    {
         this.printer = printer;
     }
 
-    public void run() {
+    public void run() 
+    {
         printer.printEven();
     }
 }
 
-public class EvenOdd {
-    public static void main(String[] args) {
+public class EvenOdd 
+{
+    public static void main(String args[]) 
+    {
         // ONE shared printer object passed to BOTH threads
         Printer printer = new Printer();
 
@@ -77,3 +106,29 @@ public class EvenOdd {
         t2.start();
     }
 }
+
+/* expected output:
+Odd Thread : 1
+Even Thread: 2
+Odd Thread : 3
+Even Thread: 4
+Odd Thread : 5
+Even Thread: 6
+Odd Thread : 7
+Even Thread: 8
+Odd Thread : 9
+Even Thread: 10
+*/
+
+/* actual output:
+Odd Thread : 1
+Even Thread: 2
+Odd Thread : 3
+Even Thread: 4
+Odd Thread : 5
+Even Thread: 6
+Odd Thread : 7
+Even Thread: 8
+Odd Thread : 9
+Even Thread: 10
+*/
