@@ -96,3 +96,361 @@ System.out.println(s == null);   // true  → still empty
 System.out.println(s == "null"); // false → not the word "null"
 ```
 
+## 4
+
+Absolutely. If you understand these points, you understand the core of this program.
+
+# Java Threads — What to Remember
+
+### 1. Threads
+
+A `Thread` is an independent path of execution.
+
+```java
+t1.start();
+t2.start();
+```
+
+starts two threads that can execute concurrently.
+
+**Don't use `run()` to start a new thread.** `start()` creates the new thread.
+
+---
+
+### 2. Shared object
+
+Your program creates **one** `Printer`:
+
+```java
+Printer printer = new Printer();
+```
+
+and gives the same object to both threads:
+
+```java
+new OddThread(printer);
+new EvenThread(printer);
+```
+
+Therefore both threads share:
+
+```java
+private int number = 1;
+```
+
+Think:
+
+```text
+             Printer
+          number = 1
+           /       \
+          /         \
+     OddThread   EvenThread
+```
+
+---
+
+### 3. `synchronized`
+
+```java
+public synchronized void printOdd()
+public synchronized void printEven()
+```
+
+Because both methods belong to the **same `Printer` object**, they use the same object's lock.
+
+Therefore:
+
+```text
+Thread A → printOdd()
+Thread B → printEven()
+```
+
+cannot execute those synchronized methods simultaneously on that object.
+
+**`synchronized` = mutual exclusion + acquiring the object's monitor/lock.**
+
+---
+
+### 4. What is the lock?
+
+Every Java object has a monitor/lock associated with it.
+
+For your program:
+
+```text
+Printer object
+      │
+      └── monitor/lock
+```
+
+A thread must own that lock to enter a synchronized instance method.
+
+---
+
+### 5. `wait()`
+
+When a thread does:
+
+```java
+wait();
+```
+
+inside synchronized code:
+
+1. It stops/waits.
+2. **It releases the object's lock.**
+3. It enters the waiting state.
+
+So:
+
+```text
+Thread
+  ↓
+wait()
+  ↓
+release lock
+  ↓
+WAITING
+```
+
+This is extremely important:
+
+> **`wait()` releases the lock.**
+
+---
+
+### 6. `notify()`
+
+```java
+notify();
+```
+
+does **not** release the lock.
+
+It basically says:
+
+> "One thread waiting on this object's monitor can wake up."
+
+But the notifying thread **still owns the lock**.
+
+So:
+
+```text
+notify()
+   ↓
+waiting thread becomes eligible
+   ↓
+current thread STILL has lock
+   ↓
+current thread eventually releases lock
+   ↓
+woken thread competes for lock
+   ↓
+gets lock
+   ↓
+continues after wait()
+```
+
+Remember:
+
+> **`notify()` wakes; it does not hand over the lock.**
+
+---
+
+### 7. Your loop is important
+
+You correctly noticed this.
+
+After:
+
+```java
+notify();
+```
+
+your thread doesn't automatically leave the method.
+
+It goes back to:
+
+```java
+while (number <= LIMIT)
+```
+
+Then it checks whether it's still its turn.
+
+For example:
+
+```text
+Odd prints 1
+     ↓
+number = 2
+     ↓
+notify()
+     ↓
+loop again
+     ↓
+2 is even
+     ↓
+Odd calls wait()
+     ↓
+Odd releases lock
+     ↓
+Even gets lock
+```
+
+So:
+
+> **`notify()` does NOT cause the current synchronized method to exit.**
+
+---
+
+### 8. Why `wait()` and `notify()` are in `Object`
+
+They're methods of `Object` because waiting/notification is associated with an **object's monitor**.
+
+Every Java object ultimately inherits from:
+
+```text
+Object
+  ↑
+Printer
+```
+
+So conceptually:
+
+```java
+wait();
+```
+
+inside `Printer` means:
+
+```java
+this.wait();
+```
+
+And:
+
+```java
+notify();
+```
+
+means:
+
+```java
+this.notify();
+```
+
+The coordination is around the **shared object**, not around a particular thread.
+
+---
+
+### 9. Why `while`, not `if`
+
+Use:
+
+```java
+while (condition)
+{
+    wait();
+}
+```
+
+because when a thread wakes up, it should **check the condition again**.
+
+In your program:
+
+```java
+while (number % 2 == 0)
+{
+    wait();
+}
+```
+
+means:
+
+> "As long as it isn't my turn, keep waiting."
+
+---
+
+### 10. What happens without `synchronized`?
+
+Two major problems.
+
+#### Problem 1: No mutual exclusion
+
+Both threads could enter the methods simultaneously.
+
+That can cause a **race condition** when accessing shared `number`.
+
+```text
+Thread A reads number
+Thread B reads number
+Thread A changes it
+Thread B changes it
+```
+
+The result can be incorrect/unpredictable.
+
+#### Problem 2: `wait()`/`notify()` require the monitor
+
+If you call:
+
+```java
+wait();
+```
+
+without owning that object's monitor, Java throws:
+
+```text
+IllegalMonitorStateException
+```
+
+So `wait()`/`notify()` are normally used inside synchronized code.
+
+---
+
+# The entire program in one mental model
+
+```text
+                 ONE Printer object
+              ┌─────────────────────┐
+              │     number           │
+              │                     │
+              │     LOCK            │
+              └─────────┬───────────┘
+                        │
+                 only one at a time
+                   /           \
+                  /             \
+             OddThread       EvenThread
+                  │               │
+                  │               │
+             odd's turn?     even's turn?
+                  │               │
+                 YES             YES
+                  │               │
+                print           print
+                  │               │
+               number++        number++
+                  │               │
+               notify()        notify()
+                  │               │
+             loop again      loop again
+                  │               │
+             not my turn     not my turn
+                  │               │
+                wait()          wait()
+                  │               │
+             release lock    release lock
+```
+
+## If you remember only 6 lines
+
+> **1. `start()` → starts a new thread.**
+> **2. Same object → shared state and same monitor.**
+> **3. `synchronized` → only one thread can own that object's lock at a time.**
+> **4. `wait()` → pauses the thread AND releases the lock.**
+> **5. `notify()` → wakes a waiting thread but does NOT release the lock.**
+> **6. The woken thread gets the lock only after the current owner releases it.**
+
+That's the foundation. Once these are clear, the rest of the code is mostly just applying those concepts to **"odd thread waits for odd numbers, even thread waits for even numbers."**
